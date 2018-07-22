@@ -6,6 +6,7 @@
     <string name="activity_measurement_button_cancel">Cancel</string>
     <string name="activity_measurement_button_measure">Tap to record timepoint</string>
     <string name="activity_measurement_text_numDataPointsCollected">Data points collected so far:</string>
+    <string name="activity_measurement_dialog_cancel_title">Discarding Measurement</string>
     <string name="activity_measurement_dialog_cancel_text">Are you sure that you want to cancel and forget this measurement?</string>
     <string name="activity_measurement_dialog_cancel_yes">Yes</string>
     <string name="activity_measurement_dialog_cancel_no">No</string>

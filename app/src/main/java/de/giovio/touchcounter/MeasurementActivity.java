@@ -24,6 +24,25 @@ public class MeasurementActivity extends AppCompatActivity {
         updateNumDataPointsCollected();
     }
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(getString(R.string.activity_measurement_dialog_cancel_title))
+                .setMessage(getString(R.string.activity_measurement_dialog_cancel_text))
+                .setPositiveButton(getString(R.string.activity_measurement_dialog_cancel_yes), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+
+                })
+                .setNegativeButton(getString(R.string.activity_measurement_dialog_cancel_no), null)
+                .setNegativeButton("No", null)
+                .show();
+    }
+
     private void updateNumDataPointsCollected() {
         final TextView textView = (TextView)findViewById(R.id.textNumDataPointsValue);
         textView.setText(String.valueOf(dataPoints.size()));
@@ -48,16 +67,15 @@ public class MeasurementActivity extends AppCompatActivity {
                         Intent intent = new Intent(MeasurementActivity.this, OverviewActivity.class);
                         MeasurementActivity.this.startActivity(intent);
                         break;
-
-                    case DialogInterface.BUTTON_NEGATIVE:
-                        // No button clicked
-                        break;
                 }
             }
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-        builder.setMessage(getString(R.string.activity_measurement_dialog_cancel_text)).setPositiveButton(getString(R.string.activity_measurement_dialog_cancel_yes), dialogClickListener)
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(getString(R.string.activity_measurement_dialog_cancel_title))
+                .setMessage(getString(R.string.activity_measurement_dialog_cancel_text))
+                .setPositiveButton(getString(R.string.activity_measurement_dialog_cancel_yes), dialogClickListener)
                 .setNegativeButton(getString(R.string.activity_measurement_dialog_cancel_no), dialogClickListener).show();
     }
 }
