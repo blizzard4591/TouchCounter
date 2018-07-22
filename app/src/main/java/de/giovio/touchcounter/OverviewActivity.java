@@ -8,6 +8,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 
@@ -32,6 +34,11 @@ public class OverviewActivity extends AppCompatActivity {
                 OverviewActivity.this.startActivity(intent);
             }
         });
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        final DataPointSeriesListAdapter adapter = new DataPointSeriesListAdapter(this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
 }
