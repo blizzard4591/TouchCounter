@@ -2,4 +2,7 @@
     <string name="app_name">TouchCounter</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_overview">OverviewActivity</string>
+    <string name="activity_measurement_button_save">Save...</string>
+    <string name="activity_measurement_button_cancel">Cancel</string>
+    <string name="activity_measurement_button_measure">Tap to record timepoint</string>
 </resources>
