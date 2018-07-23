@@ -20,7 +20,11 @@ public class DataPointSeriesViewModel extends AndroidViewModel {
         return mAllSeries;
     }
 
-    public void insert(DataPointSeries series) {
-        mRepository.insert(series);
+    public void insert(DataPointSeries series, List<DataPoint> points) {
+        mRepository.insert(series, points);
+    }
+
+    public int getDataPointCount(int seriesId) {
+        return mRepository.getDataPointCount(seriesId);
     }
 }

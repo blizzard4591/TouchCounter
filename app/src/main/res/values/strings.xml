@@ -10,4 +10,10 @@
     <string name="activity_measurement_dialog_cancel_text">Are you sure that you want to cancel and forget this measurement?</string>
     <string name="activity_measurement_dialog_cancel_yes">Yes</string>
     <string name="activity_measurement_dialog_cancel_no">No</string>
+    <string name="activity_measurement_dialog_save_title">Save Measurement</string>
+    <string name="activity_measurement_dialog_save_text">Please enter a name for this measurement series:</string>
+    <string name="activity_measurement_dialog_save_nameNotEmpty">The name can not be empty!</string>
+    <string name="activity_measurement_dialog_save_pointsNotEmpty">There are no data points in this measurement!</string>
+    <string name="activity_measurement_dialog_save_save">Save</string>
+    <string name="activity_measurement_dialog_save_cancel">Cancel</string>
 </resources>

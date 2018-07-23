@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +28,7 @@ public class DataPointSeriesListAdapter extends RecyclerView.Adapter<DataPointSe
 
     private final LayoutInflater mInflater;
     private List<DataPointSeries> mSeries; // Cached copy of DataPoint Series
+    private Map<Integer, Integer> mPointCounts;
 
     private SimpleDateFormat mDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
@@ -45,7 +47,7 @@ public class DataPointSeriesListAdapter extends RecyclerView.Adapter<DataPointSe
         if (mSeries != null) {
             DataPointSeries current = mSeries.get(position);
             holder.textSeriesNameView.setText(current.getName());
-            holder.textSeriesCountView.setText(current.getDataPoints().size());
+            holder.textSeriesCountView.setText(String.valueOf(mPointCounts.get(current.getId())));
             holder.textSeriesDateTimeView.setText(mDateFormat.format(current.getStartTime()));
         } else {
             // Covers the case of data not being ready yet.
@@ -55,8 +57,9 @@ public class DataPointSeriesListAdapter extends RecyclerView.Adapter<DataPointSe
         }
     }
 
-    void setSeries(List<DataPointSeries> series) {
+    void setSeries(List<DataPointSeries> series, Map<Integer, Integer> pointCounts) {
         mSeries = series;
+        mPointCounts = pointCounts;
         notifyDataSetChanged();
     }
 

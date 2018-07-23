@@ -21,20 +21,30 @@ public class DataPointSeriesRepository {
         return mAllSeries;
     }
 
-    public void insert(DataPointSeries series) {
-        new insertAsyncTask(mDataPointSeriesDao).execute(series);
+    public void insert(DataPointSeries series, List<DataPoint> points) {
+        new insertAsyncTask(mDataPointSeriesDao, points).execute(series);
+    }
+
+    public int getDataPointCount(int seriesId) {
+        return mDataPointSeriesDao.getDataPointCount(seriesId);
     }
 
     private static class insertAsyncTask extends AsyncTask<DataPointSeries, Void, Void> {
         private DataPointSeriesDao mAsyncTaskDao;
+        private List<DataPoint> mPoints;
 
-        insertAsyncTask(DataPointSeriesDao dao) {
+        insertAsyncTask(DataPointSeriesDao dao, List<DataPoint> points) {
             mAsyncTaskDao = dao;
+            mPoints = points;
         }
 
         @Override
         protected Void doInBackground(final DataPointSeries... params) {
-            mAsyncTaskDao.insert(params[0]);
+            int id = (int)mAsyncTaskDao.insert(params[0]);
+            for (DataPoint dp: mPoints) {
+                dp.setSeriesIdFk(id);
+                mAsyncTaskDao.insert(dp);
+            }
             return null;
         }
     }
