@@ -13,6 +13,7 @@ import java.util.Map;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class DataPointSeriesListAdapter extends RecyclerView.Adapter<DataPointSeriesListAdapter.DataPointSeriesViewHolder> {
+
     class DataPointSeriesViewHolder extends RecyclerView.ViewHolder {
         private final TextView textSeriesNameView;
         private final TextView textSeriesCountView;
@@ -55,12 +56,17 @@ public class DataPointSeriesListAdapter extends RecyclerView.Adapter<DataPointSe
             holder.textSeriesCountView.setText("0");
             holder.textSeriesDateTimeView.setText(" - ");
         }
+        holder.itemView.setLongClickable(true);
     }
 
     void setSeries(List<DataPointSeries> series, Map<Integer, Integer> pointCounts) {
         mSeries = series;
         mPointCounts = pointCounts;
         notifyDataSetChanged();
+    }
+
+    public DataPointSeries getItem(int position) {
+        return mSeries.get(position);
     }
 
     @Override

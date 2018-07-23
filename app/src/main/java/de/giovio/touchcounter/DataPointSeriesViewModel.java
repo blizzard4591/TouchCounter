@@ -24,6 +24,18 @@ public class DataPointSeriesViewModel extends AndroidViewModel {
         mRepository.insert(series, points);
     }
 
+    public void delete(DataPointSeries series) {
+        mRepository.delete(series);
+    }
+
+    public void deleteAll() {
+        mRepository.deleteAll();
+    }
+
+    public List<DataPoint> getPointsFromSeries(int seriesId) {
+        return mRepository.getPointsFromSeries(seriesId);
+    }
+
     public int getDataPointCount(int seriesId) {
         return mRepository.getDataPointCount(seriesId);
     }

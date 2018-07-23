@@ -25,8 +25,20 @@ public class DataPointSeriesRepository {
         new insertAsyncTask(mDataPointSeriesDao, points).execute(series);
     }
 
+    public void delete(DataPointSeries series) {
+        new deleteAsyncTask(mDataPointSeriesDao).execute(series);
+    }
+
+    public void deleteAll() {
+        new deleteAllAsyncTask(mDataPointSeriesDao).execute();
+    }
+
     public int getDataPointCount(int seriesId) {
         return mDataPointSeriesDao.getDataPointCount(seriesId);
+    }
+
+    public List<DataPoint> getPointsFromSeries(int seriesId) {
+        return mDataPointSeriesDao.getAllDataPointsForSeries(seriesId);
     }
 
     private static class insertAsyncTask extends AsyncTask<DataPointSeries, Void, Void> {
@@ -45,6 +57,39 @@ public class DataPointSeriesRepository {
                 dp.setSeriesIdFk(id);
                 mAsyncTaskDao.insert(dp);
             }
+            params[0].setId(id);
+            int newId = (int)mAsyncTaskDao.insert(params[0]);
+            assert(id == newId);
+            return null;
+        }
+    }
+
+    private static class deleteAsyncTask extends AsyncTask<DataPointSeries, Void, Void> {
+        private DataPointSeriesDao mAsyncTaskDao;
+
+        deleteAsyncTask(DataPointSeriesDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final DataPointSeries... params) {
+            mAsyncTaskDao.deleteAllFromSeries(params[0].getId());
+            mAsyncTaskDao.deleteById(params[0].getId());
+            return null;
+        }
+    }
+
+    private static class deleteAllAsyncTask extends AsyncTask<Void, Void, Void> {
+        private DataPointSeriesDao mAsyncTaskDao;
+
+        deleteAllAsyncTask(DataPointSeriesDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mAsyncTaskDao.deleteAllPoints();
+            mAsyncTaskDao.deleteAll();
             return null;
         }
     }

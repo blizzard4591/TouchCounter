@@ -70,11 +70,14 @@ public class MeasurementActivity extends AppCompatActivity {
 
     private String serializeDataPoints() {
         StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
         for (DataPoint dp: dataPoints) {
-            if (sb.length() > 0) {
-                sb.append("|");
+            if (!isFirst) {
+                sb.append("#");
             }
             sb.append(dp.getTime());
+
+            isFirst = false;
         }
         return sb.toString();
     }
@@ -94,7 +97,7 @@ public class MeasurementActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String name = input.getText().toString();
-                if (TextUtils.isEmpty(name)) if (TextUtils.isEmpty(name)) {
+                if (TextUtils.isEmpty(name)) {
                     Toast.makeText(getApplicationContext(), R.string.activity_measurement_dialog_save_nameNotEmpty, Toast.LENGTH_LONG).show();
                 } else if (dataPoints.size() == 0) {
                     Toast.makeText(getApplicationContext(), R.string.activity_measurement_dialog_save_pointsNotEmpty, Toast.LENGTH_LONG).show();
