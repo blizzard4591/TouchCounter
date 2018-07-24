@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +41,13 @@ public class OverviewActivity extends AppCompatActivity {
     public static final int NEW_MEASUREMENT_ACTIVITY_REQUEST_CODE = 1;
 
     private DataPointSeriesViewModel mViewModel;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_overview, menu);
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +134,32 @@ public class OverviewActivity extends AppCompatActivity {
         }
     }
 
+    private class ReceivePointsForAllSeriesAsync extends AsyncTask<Void, Void, Map<Integer, List<DataPoint>>> {
+
+        private final DataPointSeriesViewModel mViewModel;
+        private final List<DataPointSeries> mSeries;
+
+        ReceivePointsForAllSeriesAsync(DataPointSeriesViewModel viewModel, List<DataPointSeries> series) {
+            mViewModel = viewModel;
+            mSeries = series;
+        }
+
+        @Override
+        protected Map<Integer, List<DataPoint>> doInBackground(final Void... params) {
+            Map<Integer, List<DataPoint>> result = new HashMap<>();
+            for (DataPointSeries dps: mSeries) {
+                result.put(dps.getId(), mViewModel.getPointsFromSeries(dps.getId()));
+            }
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Map<Integer, List<DataPoint>> points) {
+            exportSeries(mSeries, points);
+        }
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -204,6 +238,40 @@ public class OverviewActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.action_deleteAll:
+                {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    // Yes button clicked
+                                    mViewModel.deleteAll();
+                                    break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(OverviewActivity.this);
+                    builder.setIcon(android.R.drawable.ic_dialog_alert)
+                            .setTitle(getString(R.string.activity_overview_dialog_delete_title))
+                            .setMessage(getString(R.string.activity_overview_dialog_delete_text))
+                            .setPositiveButton(getString(R.string.activity_overview_dialog_delete_yes), dialogClickListener)
+                            .setNegativeButton(getString(R.string.activity_overview_dialog_delete_no), dialogClickListener).show();
+                }
+                return true;
+            case R.id.action_exportAll:
+                exportAllSeries();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private String seriesToString(List<DataPoint> points) {
         StringBuilder sb = new StringBuilder();
         sb.append("Time of Event in ms, Time since last Event in ms, Events per Minute (BPM)\n");
@@ -227,40 +295,73 @@ public class OverviewActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    private void exportSeries(DataPointSeries series, List<DataPoint> points) {
-        FileOutputStream outputStream;
-        final String filename = "" + series.getId() + "-" + series.getName().replaceAll("[^a-zA-Z0-9]", "") + ".csv";
+    private String getFilenameForExport(DataPointSeries dps) {
+        return "" + dps.getId() + "-" + dps.getName().replaceAll("[^a-zA-Z0-9]", "") + ".csv";
+    }
 
+    private void exportSeries(List<DataPointSeries> series, Map<Integer, List<DataPoint>> pointsMap) {
+        ArrayList<Uri> uris = new ArrayList<>();
+        for (DataPointSeries dps: series) {
+            List<DataPoint> points = pointsMap.get(dps.getId());
+            Uri uri = saveFile(getFilenameForExport(dps), seriesToString(points));
+            if (uri != null) {
+                uris.add(uri);
+            }
+        }
+
+        if (uris.size() > 0) {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            intent.setType("text/plain");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, getResources().getText(R.string.activity_overview_export_intent_title)));
+        }
+    }
+
+    private Uri saveFile(String filename, String content) {
         try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(seriesToString(points).getBytes());
-            outputStream.close();
+            // creates the directory if not present yet
+            File exportsDirectory = new File(getFilesDir(), "exports");
+            exportsDirectory.mkdir();
 
-            File exportFile = new File(filename);
+            File outputFile = new File(exportsDirectory, filename);
+            FileOutputStream stream = new FileOutputStream(outputFile);
             try {
-                Uri fileUri = FileProvider.getUriForFile(OverviewActivity.this,"de.giovio.touchcounter.fileprovider", exportFile);
-                if (fileUri != null) {
-                    String mime = getContentResolver().getType(fileUri);
-                    // Grant temporary read permission to the content URI
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.setDataAndType(fileUri, mime);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
-                }
-            } catch (IllegalArgumentException e) {
-                Log.e("OverviewActivity", "The selected file can't be shared: " + filename);
+                stream.write(content.getBytes());
+            } finally {
+                stream.close();
             }
 
-            Toast.makeText(getApplicationContext(), getString(R.string.activity_overview_export_success) + filename + " containing " + points.size() + " events.", Toast.LENGTH_LONG).show();
+            return FileProvider.getUriForFile(OverviewActivity.this,"de.giovio.touchcounter.fileprovider", outputFile);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("OverviewActivity", "Failed to export file: " + e.getMessage());
             Toast.makeText(getApplicationContext(), R.string.activity_overview_export_error, Toast.LENGTH_LONG).show();
+        }
+        return null;
+    }
+
+    private void exportSeries(DataPointSeries series, List<DataPoint> points) {
+        Uri fileUri = saveFile(getFilenameForExport(series), seriesToString(points));
+        if (fileUri != null) {
+            //String mime = getContentResolver().getType(fileUri);
+            // Grant temporary read permission to the content URI
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+            intent.setType("text/plain");
+            //intent.setDataAndType(fileUri, mime);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(Intent.createChooser(intent, getResources().getText(R.string.activity_overview_export_intent_title)));
         }
     }
 
     private void exportSeries(DataPointSeries dps) {
         new ReceivePointsForSeriesAsync(mViewModel, dps).execute();
+    }
+
+    private void exportAllSeries() {
+        new ReceivePointsForAllSeriesAsync(mViewModel, mViewModel.getAllSeries().getValue()).execute();
     }
 
 }

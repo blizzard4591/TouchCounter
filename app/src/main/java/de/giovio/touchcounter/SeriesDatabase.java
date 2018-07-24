@@ -60,7 +60,9 @@ public abstract class SeriesDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             synchronized (SeriesDatabase.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), SeriesDatabase.class, "series_database").addCallback(sRoomDatabaseCallback).build();
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(), SeriesDatabase.class, "series_database")
+                            //.addCallback(sRoomDatabaseCallback)
+                            .build();
                 }
             }
         }
