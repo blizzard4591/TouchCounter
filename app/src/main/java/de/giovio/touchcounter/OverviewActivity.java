@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -55,6 +57,8 @@ public class OverviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_overview);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -258,34 +262,57 @@ public class OverviewActivity extends AppCompatActivity {
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(OverviewActivity.this);
                     builder.setIcon(android.R.drawable.ic_dialog_alert)
-                            .setTitle(getString(R.string.activity_overview_dialog_delete_title))
-                            .setMessage(getString(R.string.activity_overview_dialog_delete_text))
-                            .setPositiveButton(getString(R.string.activity_overview_dialog_delete_yes), dialogClickListener)
-                            .setNegativeButton(getString(R.string.activity_overview_dialog_delete_no), dialogClickListener).show();
+                            .setTitle(getString(R.string.activity_overview_dialog_deleteAll_title))
+                            .setMessage(getString(R.string.activity_overview_dialog_deleteAll_text))
+                            .setPositiveButton(getString(R.string.activity_overview_dialog_deleteAll_yes), dialogClickListener)
+                            .setNegativeButton(getString(R.string.activity_overview_dialog_deleteAll_no), dialogClickListener).show();
                 }
                 return true;
             case R.id.action_exportAll:
                 exportAllSeries();
                 return true;
+            case R.id.action_settings:
+                Intent intent = new Intent(OverviewActivity.this, SettingsActivity.class);
+                OverviewActivity.this.startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
     private String seriesToString(List<DataPoint> points) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        final String csvDelimiterOption = sharedPref.getString(SettingsActivity.KEY_PREF_CSV_DELIMITER, "");
+        String csvDelimiter = null;
+        switch (csvDelimiterOption) {
+            case "Comma":
+                csvDelimiter = ",";
+                break;
+            case "Semicolon":
+                csvDelimiter = ";";
+                break;
+            default:
+                Log.e("OverviewActivity", "Unhandled and unsupported CSV Delimiter option chosen: " + csvDelimiterOption + " - Defaulting to Semicolon.");
+                csvDelimiter = ";";
+                break;
+        }
+
         StringBuilder sb = new StringBuilder();
-        sb.append("Time of Event in ms, Time since last Event in ms, Events per Minute (BPM)\n");
+        sb.append("Time of Event in ms");
+        sb.append(csvDelimiter);
+        sb.append("Time since last Event in ms");
+        sb.append(csvDelimiter);
+        sb.append("Events per Minute (BPM)\n");
         DataPoint last = null;
         for (DataPoint dp: points) {
             sb.append(dp.getTime());
-            sb.append(",");
+            sb.append(csvDelimiter);
             if (last != null) {
                 final long diff = dp.getTime() - last.getTime();
                 sb.append(diff);
-                sb.append(",");
+                sb.append(csvDelimiter);
                 sb.append(60000 / diff);
             } else {
-                sb.append(",");
+                sb.append(csvDelimiter);
             }
             sb.append("\n");
 

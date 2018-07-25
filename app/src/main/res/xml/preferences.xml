@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/pref_cat_export"
+        android:key="pref_cat_export">
+        <ListPreference
+            android:defaultValue="@string/pref_csvDelimiter_default"
+            android:entries="@array/pref_csvDelimiter"
+            android:entryValues="@array/pref_csvDelimiter"
+            android:key="pref_csvDelimiter"
+            android:summary="@string/pref_csvDelimiter_summary"
+            android:title="@string/pref_csvDelimiter_title" />
+    </PreferenceCategory>
+</PreferenceScreen>
