@@ -6,6 +6,7 @@ import java.util.List;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import de.giovio.touchcounter.database.DataPointSeriesRepository;
 
 public class DataPointSeriesViewModel extends AndroidViewModel {
     private DataPointSeriesRepository mRepository;

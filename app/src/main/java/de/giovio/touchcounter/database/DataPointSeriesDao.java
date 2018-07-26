@@ -1,4 +1,4 @@
-package de.giovio.touchcounter;
+package de.giovio.touchcounter.database;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,8 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
+import de.giovio.touchcounter.DataPoint;
+import de.giovio.touchcounter.DataPointSeries;
 
 import static androidx.room.OnConflictStrategy.REPLACE;
 

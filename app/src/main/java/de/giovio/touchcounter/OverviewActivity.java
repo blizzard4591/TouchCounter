@@ -117,28 +117,7 @@ public class OverviewActivity extends AppCompatActivity {
         }
     }
 
-    private class ReceivePointsForSeriesAsync extends AsyncTask<Void, Void, List<DataPoint>> {
-
-        private final DataPointSeriesViewModel mViewModel;
-        private final DataPointSeries mSeries;
-
-        ReceivePointsForSeriesAsync(DataPointSeriesViewModel viewModel, DataPointSeries series) {
-            mViewModel = viewModel;
-            mSeries = series;
-        }
-
-        @Override
-        protected List<DataPoint> doInBackground(final Void... params) {
-            return mViewModel.getPointsFromSeries(mSeries.getId());
-        }
-
-        @Override
-        protected void onPostExecute(List<DataPoint> points) {
-            exportSeries(mSeries, points);
-        }
-    }
-
-    private class ReceivePointsForAllSeriesAsync extends AsyncTask<Void, Void, Map<Integer, List<DataPoint>>> {
+    private class ReceivePointsForAllSeriesAsync extends AsyncTask<Void, Void, ArrayList<Uri>> {
 
         private final DataPointSeriesViewModel mViewModel;
         private final List<DataPointSeries> mSeries;
@@ -148,19 +127,42 @@ public class OverviewActivity extends AppCompatActivity {
             mSeries = series;
         }
 
-        @Override
-        protected Map<Integer, List<DataPoint>> doInBackground(final Void... params) {
-            Map<Integer, List<DataPoint>> result = new HashMap<>();
-            for (DataPointSeries dps: mSeries) {
-                result.put(dps.getId(), mViewModel.getPointsFromSeries(dps.getId()));
-            }
-
-            return result;
+        ReceivePointsForAllSeriesAsync(DataPointSeriesViewModel viewModel, DataPointSeries series) {
+            mViewModel = viewModel;
+            mSeries = new ArrayList<>();
+            mSeries.add(series);
         }
 
         @Override
-        protected void onPostExecute(Map<Integer, List<DataPoint>> points) {
-            exportSeries(mSeries, points);
+        protected ArrayList<Uri> doInBackground(final Void... params) {
+            ArrayList<Uri> uris = new ArrayList<>();
+            for (DataPointSeries dps: mSeries) {
+                List<DataPoint> points = mViewModel.getPointsFromSeries(dps.getId());
+                Uri uri = saveFile(getFilenameForExport(dps), seriesToString(points));
+                if (uri != null) {
+                    uris.add(uri);
+                }
+            }
+
+            return uris;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Uri> uris) {
+            if (uris.size() > 0) {
+                Intent intent = new Intent();
+                if (uris.size() == 1) {
+                    intent.setAction(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                } else {
+                    intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                }
+
+                intent.setType("text/plain");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(intent, getResources().getText(R.string.activity_overview_export_intent_title)));
+            }
         }
     }
 
@@ -322,28 +324,8 @@ public class OverviewActivity extends AppCompatActivity {
         return sb.toString();
     }
 
-    private String getFilenameForExport(DataPointSeries dps) {
+    private static String getFilenameForExport(DataPointSeries dps) {
         return "" + dps.getId() + "-" + dps.getName().replaceAll("[^a-zA-Z0-9]", "") + ".csv";
-    }
-
-    private void exportSeries(List<DataPointSeries> series, Map<Integer, List<DataPoint>> pointsMap) {
-        ArrayList<Uri> uris = new ArrayList<>();
-        for (DataPointSeries dps: series) {
-            List<DataPoint> points = pointsMap.get(dps.getId());
-            Uri uri = saveFile(getFilenameForExport(dps), seriesToString(points));
-            if (uri != null) {
-                uris.add(uri);
-            }
-        }
-
-        if (uris.size() > 0) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND_MULTIPLE);
-            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-            intent.setType("text/plain");
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, getResources().getText(R.string.activity_overview_export_intent_title)));
-        }
     }
 
     private Uri saveFile(String filename, String content) {
@@ -368,23 +350,8 @@ public class OverviewActivity extends AppCompatActivity {
         return null;
     }
 
-    private void exportSeries(DataPointSeries series, List<DataPoint> points) {
-        Uri fileUri = saveFile(getFilenameForExport(series), seriesToString(points));
-        if (fileUri != null) {
-            //String mime = getContentResolver().getType(fileUri);
-            // Grant temporary read permission to the content URI
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, fileUri);
-            intent.setType("text/plain");
-            //intent.setDataAndType(fileUri, mime);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(intent, getResources().getText(R.string.activity_overview_export_intent_title)));
-        }
-    }
-
     private void exportSeries(DataPointSeries dps) {
-        new ReceivePointsForSeriesAsync(mViewModel, dps).execute();
+        new ReceivePointsForAllSeriesAsync(mViewModel, dps).execute();
     }
 
     private void exportAllSeries() {

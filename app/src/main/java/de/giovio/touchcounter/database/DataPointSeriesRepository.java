@@ -1,4 +1,4 @@
-package de.giovio.touchcounter;
+package de.giovio.touchcounter.database;
 
 import android.app.Application;
 import android.os.AsyncTask;
@@ -6,18 +6,22 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import androidx.lifecycle.LiveData;
+import de.giovio.touchcounter.DataPoint;
+import de.giovio.touchcounter.DataPointSeries;
+import de.giovio.touchcounter.database.DataPointSeriesDao;
+import de.giovio.touchcounter.database.SeriesDatabase;
 
 public class DataPointSeriesRepository {
     private DataPointSeriesDao mDataPointSeriesDao;
     private LiveData<List<DataPointSeries>> mAllSeries;
 
-    DataPointSeriesRepository(Application application) {
+    public DataPointSeriesRepository(Application application) {
         SeriesDatabase db = SeriesDatabase.getDatabase(application);
         mDataPointSeriesDao = db.dataPointSeriesDao();
         mAllSeries = mDataPointSeriesDao.getAllSeries();
     }
 
-    LiveData<List<DataPointSeries>> getAllSeries() {
+    public LiveData<List<DataPointSeries>> getAllSeries() {
         return mAllSeries;
     }
 

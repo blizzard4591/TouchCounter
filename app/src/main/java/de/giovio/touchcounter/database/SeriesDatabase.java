@@ -1,4 +1,4 @@
-package de.giovio.touchcounter;
+package de.giovio.touchcounter.database;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +8,8 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
+import de.giovio.touchcounter.DataPoint;
+import de.giovio.touchcounter.DataPointSeries;
 
 @Database(version = 1, entities = {DataPoint.class, DataPointSeries.class})
 public abstract class SeriesDatabase extends RoomDatabase {
