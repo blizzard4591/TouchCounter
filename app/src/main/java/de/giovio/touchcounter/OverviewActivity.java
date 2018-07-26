@@ -297,6 +297,9 @@ public class OverviewActivity extends AppCompatActivity {
                 csvDelimiter = ";";
                 break;
         }
+        final String minDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MIN_TIME_DIFF, "50");
+        final long minDiff = Long.parseLong(minDiffOptionString);
+        Log.i("OverviewActivity", "Ignoring all data points with a time difference of <= " + minDiff + " ms.");
 
         StringBuilder sb = new StringBuilder();
         sb.append("Time of Event in ms");
@@ -306,10 +309,22 @@ public class OverviewActivity extends AppCompatActivity {
         sb.append("Events per Minute (BPM)\n");
         DataPoint last = null;
         for (DataPoint dp: points) {
+            if (last != null) {
+                final long diff = dp.getTime() - last.getTime();
+                if (diff <= minDiff) {
+                    Log.i("OverviewActivity", "Two successive data points have a time difference of " + diff + " <= " + minDiff + ", ignoring...");
+                    continue;
+                }
+            }
+
             sb.append(dp.getTime());
             sb.append(csvDelimiter);
             if (last != null) {
-                final long diff = dp.getTime() - last.getTime();
+                long diff = dp.getTime() - last.getTime();
+                if (diff == 0) {
+                    Log.w("OverviewActivity", "Two successive data points have the same timestamp: " + dp.getTime() + " - forcing to 1ms.");
+                    diff = 1;
+                }
                 sb.append(diff);
                 sb.append(csvDelimiter);
                 sb.append(60000 / diff);

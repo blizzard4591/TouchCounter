@@ -37,4 +37,7 @@
     <string name="pref_csvDelimiter_title">CSV Delimiter</string>
     <string name="pref_csvDelimiter_summary">Field Separator: %s</string>
     <string name="pref_csvDelimiter_default">Comma</string>
+    <string name="pref_minDataPointDiff_title">Minimum time difference between successive data points</string>
+    <string name="pref_minDataPointDiff_summary">Ignore data points closer than X ms.</string>
+    <string name="pref_minDataPointDiff_default">50</string>
 </resources>
