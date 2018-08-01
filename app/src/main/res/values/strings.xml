@@ -40,4 +40,7 @@
     <string name="pref_minDataPointDiff_title">Minimum time difference between successive data points</string>
     <string name="pref_minDataPointDiff_summary">Ignore data points closer than X ms.</string>
     <string name="pref_minDataPointDiff_default">50</string>
+    <string name="pref_maxDataPointDiffPause_title">Maximum time difference between successive data points that triggers a pause</string>
+    <string name="pref_maxDataPointDiffPause_summary">Restart BPM calculation after a pause of more than X ms.</string>
+    <string name="pref_maxDataPointDiffPause_default">1500</string>
 </resources>

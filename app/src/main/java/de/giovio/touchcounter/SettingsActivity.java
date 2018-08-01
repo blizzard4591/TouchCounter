@@ -7,6 +7,7 @@ public class SettingsActivity extends Activity {
 
     public static final String KEY_PREF_CSV_DELIMITER = "pref_csvDelimiter";
     public static final String KEY_PREF_MIN_TIME_DIFF = "pref_minDataPointDiff";
+    public static final String KEY_PREF_MAX_TIME_DIFF_PAUSE = "pref_maxDataPointDiffPause";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

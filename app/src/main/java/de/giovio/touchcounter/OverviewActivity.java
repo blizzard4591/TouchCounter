@@ -73,7 +73,14 @@ public class OverviewActivity extends AppCompatActivity {
         });
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        final DataPointSeriesListAdapter adapter = new DataPointSeriesListAdapter(this);
+        final DataPointSeriesListAdapter adapter = new DataPointSeriesListAdapter(this, new DataPointSeriesListAdapter.OnItemClickListener() {
+            @Override public void onItemClick(DataPointSeries item) {
+                Intent intent = new Intent(OverviewActivity.this, ShowDataActivity.class);
+                intent.putExtra(ShowDataActivity.EXTRA_SERIES_ID, item.getId());
+                startActivity(intent);
+                //Toast.makeText(getApplicationContext(), "Item Clicked = " + item.getName(), Toast.LENGTH_LONG).show();
+            }
+        });
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         registerForContextMenu(recyclerView);
@@ -301,18 +308,34 @@ public class OverviewActivity extends AppCompatActivity {
         final long minDiff = Long.parseLong(minDiffOptionString);
         Log.i("OverviewActivity", "Ignoring all data points with a time difference of <= " + minDiff + " ms.");
 
+        final String maxDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MAX_TIME_DIFF_PAUSE, "1500");
+        final long maxDiff = Long.parseLong(maxDiffOptionString);
+        Log.i("OverviewActivity", "Restarting BPM calculation for a time difference of >= " + maxDiff + " ms.");
+
         StringBuilder sb = new StringBuilder();
         sb.append("Time of Event in ms");
         sb.append(csvDelimiter);
         sb.append("Time since last Event in ms");
         sb.append(csvDelimiter);
+        sb.append("Time of Event since start in ms");
+        sb.append(csvDelimiter);
         sb.append("Events per Minute (BPM)\n");
         DataPoint last = null;
+        long firstTimestamp = -1;
+
         for (DataPoint dp: points) {
+            if (firstTimestamp < 0) {
+                firstTimestamp = dp.getTime();
+            }
+
             if (last != null) {
                 final long diff = dp.getTime() - last.getTime();
                 if (diff <= minDiff) {
                     Log.i("OverviewActivity", "Two successive data points have a time difference of " + diff + " <= " + minDiff + ", ignoring...");
+                    continue;
+                } else if (diff >= maxDiff) {
+                    Log.i("OverviewActivity", "Two successive data points have a time difference of " + diff + " >= " + maxDiff + ", restarting...");
+                    last = dp;
                     continue;
                 }
             }
@@ -327,8 +350,11 @@ public class OverviewActivity extends AppCompatActivity {
                 }
                 sb.append(diff);
                 sb.append(csvDelimiter);
+                sb.append(dp.getTime() - firstTimestamp);
+                sb.append(csvDelimiter);
                 sb.append(60000 / diff);
             } else {
+                sb.append(csvDelimiter);
                 sb.append(csvDelimiter);
             }
             sb.append("\n");

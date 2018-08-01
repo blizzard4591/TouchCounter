@@ -19,4 +19,12 @@
         android:singleLine="true"
         android:summary="@string/pref_minDataPointDiff_summary"
         android:title="@string/pref_minDataPointDiff_title" />
+    <EditTextPreference
+        android:defaultValue="@string/pref_maxDataPointDiffPause_default"
+        android:key="pref_maxDataPointDiff"
+        android:numeric="integer"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="@string/pref_maxDataPointDiffPause_summary"
+        android:title="@string/pref_maxDataPointDiffPause_title" />
 </PreferenceScreen>
