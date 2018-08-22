@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -102,6 +104,43 @@ public class MeasurementActivity extends AppCompatActivity {
     private void updateNumDataPointsCollected() {
         final TextView textView = findViewById(R.id.textNumDataPointsValue);
         textView.setText(String.valueOf(dataPoints.size()));
+
+        // Avg BPM
+        long avgBpm = 0;
+        if (dataPoints.size() >= 2) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            final String minDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MIN_TIME_DIFF, "50");
+            final long minDiff = Long.parseLong(minDiffOptionString);
+
+            final String maxDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MAX_TIME_DIFF_PAUSE, "1500");
+            final long maxDiff = Long.parseLong(maxDiffOptionString);
+
+            long duration = 0;
+            int count = 0;
+            long lastTimestamp = dataPoints.get(dataPoints.size() - 1).getTime();
+            for (int i = dataPoints.size() - 2; i > 0; ++i) {
+                final long currentTimestamp = dataPoints.get(i).getTime();
+                final long diff = lastTimestamp - currentTimestamp;
+                if (diff <= minDiff) {
+                    continue;
+                } else if (diff >= maxDiff) {
+                    break;
+                } else {
+                    duration += diff;
+                    ++count;
+
+                    if (count >= 5) {
+                        break;
+                    }
+                }
+            }
+
+            if (count > 0) {
+                avgBpm = 60000 / (duration / count);
+            }
+        }
+        final TextView textViewAvgBpm = findViewById(R.id.textAvgBpmValue);
+        textViewAvgBpm.setText(String.valueOf(avgBpm));
     }
 
     public void btnMeasureOnClick(View v) {
