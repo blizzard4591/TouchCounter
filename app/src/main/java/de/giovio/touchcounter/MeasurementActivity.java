@@ -16,7 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MeasurementActivity extends AppCompatActivity {
 
@@ -54,6 +60,44 @@ public class MeasurementActivity extends AppCompatActivity {
                 startTime = savedInstanceState.getLong(BUNDLE_NAME_STARTTIME);
                 Log.i("MeasurementActivity", "Restored " + dataPoints.size() + " points from saved instance.");
             }
+        }
+
+        updateNumDataPointsCollected();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Store values between instances here
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();  // Put the values from the UI
+
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<DataPoint>>() {}.getType();
+        String json = gson.toJson(dataPoints, listType);
+
+        editor.putString(BUNDLE_NAME_DATAPOINTS, json);
+        editor.putLong(BUNDLE_NAME_STARTTIME, startTime);
+        editor.apply();
+
+        Log.i("MeasurementActivity", "Stored " + dataPoints.size() + " points to shared prefs.");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        String jsonPoints = preferences.getString(BUNDLE_NAME_DATAPOINTS, null);
+        long savedStartTime = preferences.getLong(BUNDLE_NAME_STARTTIME, -1);
+        if (jsonPoints != null && savedStartTime != -1) {
+            Type listType = new TypeToken<ArrayList<DataPoint>>() {}.getType();
+            Gson gson = new Gson();
+            List<DataPoint> savedDataPoints = gson.fromJson(jsonPoints, listType);
+            dataPoints = (ArrayList<DataPoint>) savedDataPoints;
+            startTime = savedStartTime;
+            Log.i("MeasurementActivity", "Resumed " + dataPoints.size() + " points from shared prefs.");
         }
 
         updateNumDataPointsCollected();
@@ -118,7 +162,7 @@ public class MeasurementActivity extends AppCompatActivity {
             long duration = 0;
             int count = 0;
             long lastTimestamp = dataPoints.get(dataPoints.size() - 1).getTime();
-            for (int i = dataPoints.size() - 2; i > 0; ++i) {
+            for (int i = dataPoints.size() - 2; i >= 0; --i) {
                 final long currentTimestamp = dataPoints.get(i).getTime();
                 final long diff = lastTimestamp - currentTimestamp;
                 if (diff <= minDiff) {
