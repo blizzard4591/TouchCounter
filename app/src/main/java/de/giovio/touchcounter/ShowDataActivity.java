@@ -71,6 +71,8 @@ public class ShowDataActivity extends AppCompatActivity {
         final String minDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MIN_TIME_DIFF, "50");
         final long minDiff = Long.parseLong(minDiffOptionString);
 
+        final String maxDiffOptionString = sharedPref.getString(SettingsActivity.KEY_PREF_MAX_TIME_DIFF_PAUSE, "1500");
+        final long maxDiff = Long.parseLong(maxDiffOptionString);
 
         ArrayList<com.jjoe64.graphview.series.DataPoint> prelimList = new ArrayList<>();
         final long smallestTime = points.get(0).getTime();
@@ -83,6 +85,9 @@ public class ShowDataActivity extends AppCompatActivity {
             if (last != null) {
                 final long diff = dp.getTime() - last.getTime();
                 if (diff <= minDiff) {
+                    continue;
+                } else if (diff >= maxDiff) {
+                    last = dp;
                     continue;
                 }
             }
