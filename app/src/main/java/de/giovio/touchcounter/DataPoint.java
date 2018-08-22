@@ -1,5 +1,8 @@
 package de.giovio.touchcounter;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -13,7 +16,7 @@ import androidx.room.PrimaryKey;
                 parentColumns = "id",
                 childColumns = "series_fk"
         )}, indices = {@Index("series_fk")})
-public class DataPoint {
+public class DataPoint implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
@@ -51,5 +54,37 @@ public class DataPoint {
 
     public void setSeriesIdFk(int seriesIdFk) {
         this.seriesIdFk = seriesIdFk;
+    }
+
+    // Parcel stuff
+    public DataPoint(Parcel in) {
+        super();
+        readFromParcel(in);
+    }
+
+    public static final Parcelable.Creator<DataPoint> CREATOR = new Parcelable.Creator<DataPoint>() {
+        public DataPoint createFromParcel(Parcel in) {
+            return new DataPoint(in);
+        }
+
+        public DataPoint[] newArray(int size) {
+            return new DataPoint[size];
+        }
+    };
+
+    public void readFromParcel(Parcel in) {
+        id = in.readInt();
+        time = in.readLong();
+        seriesIdFk = in.readInt();
+
+    }
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeLong(time);
+        dest.writeInt(seriesIdFk);
     }
 }

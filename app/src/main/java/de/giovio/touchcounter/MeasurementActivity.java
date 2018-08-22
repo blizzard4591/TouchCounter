@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,7 +23,19 @@ public class MeasurementActivity extends AppCompatActivity {
     public static final String EXTRA_REPLY_POINTS = "REPLY_NEW_MEASUREMENT_POINTS";
 
     private ArrayList<DataPoint> dataPoints;
+    private static final String BUNDLE_NAME_DATAPOINTS = "DataPoints";
     private long startTime;
+    private static final String BUNDLE_NAME_STARTTIME = "StartTime";
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putParcelableArrayList(BUNDLE_NAME_DATAPOINTS, dataPoints);
+        savedInstanceState.putLong(BUNDLE_NAME_STARTTIME, startTime);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +43,35 @@ public class MeasurementActivity extends AppCompatActivity {
         setContentView(R.layout.activity_measurement);
 
         dataPoints = new ArrayList<>();
-        updateNumDataPointsCollected();
-
         startTime = -1;
+
+        if (savedInstanceState != null) {
+            ArrayList<DataPoint> oldDataPoints = savedInstanceState.getParcelableArrayList(BUNDLE_NAME_DATAPOINTS);
+            if (oldDataPoints != null && oldDataPoints.size() > 0) {
+                dataPoints = oldDataPoints;
+                startTime = savedInstanceState.getLong(BUNDLE_NAME_STARTTIME);
+                Log.i("MeasurementActivity", "Restored " + dataPoints.size() + " points from saved instance.");
+            }
+        }
+
+        updateNumDataPointsCollected();
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        if (savedInstanceState != null) {
+            ArrayList<DataPoint> oldDataPoints = savedInstanceState.getParcelableArrayList(BUNDLE_NAME_DATAPOINTS);
+            if (oldDataPoints != null && oldDataPoints.size() > 0) {
+                dataPoints = oldDataPoints;
+                startTime = savedInstanceState.getLong(BUNDLE_NAME_STARTTIME);
+                Log.i("MeasurementActivity", "Restored " + dataPoints.size() + " points from saved instance.");
+            }
+        }
+
+        updateNumDataPointsCollected();
     }
 
     @Override
