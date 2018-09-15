@@ -10,8 +10,8 @@ android {
         applicationId "de.giovio.touchcounter"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 6
-        versionName "1.4"
+        versionCode 12
+        versionName "1.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         javaCompileOptions {
@@ -28,7 +28,7 @@ android {
             signingConfig signingConfigs.config
         }
     }
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.2'
     productFlavors {
     }
 }

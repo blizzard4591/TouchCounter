@@ -241,7 +241,7 @@ public class OverviewActivity extends AppCompatActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(OverviewActivity.this);
                     builder.setIcon(android.R.drawable.ic_dialog_alert)
                             .setTitle(getString(R.string.activity_overview_dialog_delete_title))
-                            .setMessage(getString(R.string.activity_overview_dialog_delete_text))
+                            .setMessage(getString(R.string.activity_overview_dialog_delete_text).replace("PLACEHOLDER", dps.getName()))
                             .setPositiveButton(getString(R.string.activity_overview_dialog_delete_yes), dialogClickListener)
                             .setNegativeButton(getString(R.string.activity_overview_dialog_delete_no), dialogClickListener).show();
                 }

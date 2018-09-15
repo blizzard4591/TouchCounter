@@ -172,6 +172,7 @@ public class MeasurementActivity extends AppCompatActivity {
                 } else {
                     duration += diff;
                     ++count;
+                    lastTimestamp = currentTimestamp;
 
                     if (count >= 5) {
                         break;
@@ -179,7 +180,7 @@ public class MeasurementActivity extends AppCompatActivity {
                 }
             }
 
-            if (count > 0) {
+            if ((count > 0) && (duration > 0)) {
                 avgBpm = 60000 / (duration / count);
             }
         }
@@ -238,6 +239,10 @@ public class MeasurementActivity extends AppCompatActivity {
                     replyIntent.putExtra(EXTRA_REPLY_STARTTIME, startTimeString);
                     replyIntent.putExtra(EXTRA_REPLY_POINTS, serializedPoints);
                     setResult(RESULT_OK, replyIntent);
+
+                    // Reset points
+                    dataPoints = new ArrayList<>();
+
                     finish();
                 }
             }
@@ -266,6 +271,10 @@ public class MeasurementActivity extends AppCompatActivity {
                             // Yes button clicked
                             Intent replyIntent = new Intent();
                             setResult(RESULT_CANCELED, replyIntent);
+
+                            // Reset points
+                            dataPoints = new ArrayList<>();
+
                             finish();
                             break;
                     }
