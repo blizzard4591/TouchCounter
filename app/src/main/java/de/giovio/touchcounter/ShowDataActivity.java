@@ -132,10 +132,23 @@ public class ShowDataActivity extends AppCompatActivity {
         graph.getViewport().setScalable(true);
         graph.getViewport().setScalableY(true);
 
+        final String myFormatString = (largestX < 8000) ? "%d:%03d" : "%d:%02d";
+        final boolean showMillis = (largestX < 8000) ? true : false;
+
         graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             @Override
             public String formatLabel(double value, boolean isValueX) {
                 // return as Integer
+                if (isValueX) {
+                    int fullMillis = (int)(value);
+                    int minutes = fullMillis / 60000;
+                    int seconds = (fullMillis - (60000 * minutes)) / 1000;
+                    int millis = fullMillis - (60000 * minutes) - (1000 * seconds);
+                    if (showMillis) {
+                        return String.format(myFormatString, seconds, millis);
+                    }
+                    return String.format(myFormatString, minutes, seconds);
+                }
                 return String.valueOf((int) value);
             }
         });
